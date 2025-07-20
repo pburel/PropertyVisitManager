@@ -1,0 +1,72 @@
+
+  // Mock property data
+  final Map<String, dynamic> _propertyData = {
+    "id": "prop_001",
+    "address": "123 Maple Street, Downtown District, Montreal, QC H3A 1B2",
+    "propertyType": "2-Bedroom Apartment",
+    "price": "\$2,400/month",
+    "visitDate": DateTime(2025, 7, 15),
+    "overallScore": 4.2,
+    "isFavorite": false,
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80",
+      "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2058&q=80",
+      "https://images.unsplash.com/photo-1484154218962-a197022b5858?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2074&q=80",
+      "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80"
+    ],
+    "ratings": {
+      "luminosity": 4.5,
+      "ambient_noise": 3.8,
+      "thermal_insulation": 4.0,
+      "general_condition": 4.2,
+      "equipment_state": 3.9,
+      "neighborhood_security": 4.3,
+      "accessibility": 4.1,
+      "renovation_potential": 3.7,
+      "value_for_money": 4.4
+    },
+    "checklist": {
+      "mold_presence": true,
+      "cleanliness": true,
+      "window_functionality": true,
+      "floor_condition": false,
+      "odor_absence": true,
+      "wall_state": true,
+      "room_lighting": true,
+      "internet_connectivity": false,
+      "water_pressure": true,
+      "heating_system": true,
+      "electrical_outlets": false,
+      "storage_space": true
+    },
+    "notes":
+        "Beautiful apartment with excellent natural light throughout the day. The living room is spacious and well-ventilated. Kitchen appliances are modern and in good working condition. However, some minor issues with the flooring in the bedroom need attention. The building has good security and the neighborhood feels safe. Overall, great value for the price point in this area."
+  };
+
+  // Mock available properties for comparison
+  final List<Map<String, dynamic>> _availableProperties = [
+    {
+      "id": "prop_002",
+      "address": "456 Oak Avenue, Westside, Montreal, QC H3B 2C3",
+      "overallScore": 3.8,
+      "visitDate": DateTime(2025, 7, 10),
+      "imageUrl":
+          "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80"
+    },
+    {
+      "id": "prop_003",
+      "address": "789 Pine Street, Eastside, Montreal, QC H3C 3D4",
+      "overallScore": 4.5,
+      "visitDate": DateTime(2025, 7, 8),
+      "imageUrl":
+          "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2080&q=80"
+    },
+    {
+      "id": "prop_004",
+      "address": "321 Elm Boulevard, Northside, Montreal, QC H3D 4E5",
+      "overallScore": 3.2,
+      "visitDate": DateTime(2025, 7, 5),
+      "imageUrl":
+          "https://images.unsplash.com/photo-1493809842364-78817add7ffb?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80"
+    }
+  ];

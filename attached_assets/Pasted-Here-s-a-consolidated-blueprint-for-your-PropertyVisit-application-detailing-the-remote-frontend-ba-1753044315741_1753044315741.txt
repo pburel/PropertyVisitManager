@@ -1,0 +1,219 @@
+Here's a consolidated blueprint for your PropertyVisit application, detailing the remote frontend/backend architecture, and incorporating all the features discussed, including comprehensive management for users, properties, ratings, checklists, and visits.
+
+---
+
+## PropertyVisit: Consolidated Blueprint for Web Admin Portal & Backend
+
+This document outlines the complete architecture for the **PropertyVisit** application, focusing on a robust **Supabase backend** and a complementary **Next.js Web Administration Portal**. The goal is to ensure seamless data synchronization and comprehensive management capabilities for administrators, all while supporting a large and growing user base.
+
+---
+
+### I. Core Architecture & Philosophy
+
+The system is designed around a **single source of truth** managed by Supabase, offering a flexible yet structured approach to data.
+
+**A. Backend (Supabase)**
+* **Database:** A dedicated **PostgreSQL** instance for highly relational data (users, properties, visits, ratings criteria, checklist items). This provides powerful querying capabilities (JOINs, aggregations) essential for complex applications and offers predictable performance at scale.
+* **Philosophy:** Open-source, self-hostable alternative to Firebase. It builds upon trusted open-source tools, providing the power of SQL with the ease of a Backend-as-a-Service (BaaS). This minimizes vendor lock-in and offers a clear exit strategy.
+* **Authentication:** Supabase Auth, built on PostgreSQL's Row Level Security (RLS), offers fine-grained access control directly in the database.
+* **Real-time:** Supabase's real-time engine allows live updates to data across all connected clients.
+* **Storage:** Scalable object storage for property images, secured by RLS.
+* **Edge Functions:** For complex server-side logic (e.g., generating reports, custom business logic).
+* **Pricing:** Generally more affordable and predictable at scale, as it's not primarily based on individual database reads/writes.
+
+**B. Frontend (Web Admin Portal)**
+* **Framework:** Next.js 14+ (App Router, TypeScript)
+* **UI/Styling:** Shadcn/UI (components) and Tailwind CSS (styling)
+* **Backend Integration:** `@supabase/supabase-js` and `@supabase/auth-helpers-nextjs` for seamless connection to Supabase services.
+* **Synchronization:** Both the mobile app and the web portal connect to the *same* Supabase project, ensuring native, real-time synchronization of data.
+
+---
+
+### II. Supabase Backend Schema (PostgreSQL)
+
+The following tables form the backbone of your application's data structure:
+
+* **`profiles`**:
+    * `id` (UUID, PK, FK to `auth.users.id`)
+    * `full_name` (TEXT)
+    * `avatar_url` (TEXT)
+    * `role` (TEXT, e.g., 'user', 'manager', 'admin' - **Crucial for permissions**)
+    * `created_at` (TIMESTAMPTZ)
+* **`properties`**:
+    * `id` (UUID, PK)
+    * `address` (TEXT, NOT NULL)
+    * `city` (TEXT)
+    * `postal_code` (TEXT)
+    * `country` (TEXT)
+    * `property_type` (TEXT)
+    * `price` (NUMERIC)
+    * `bedrooms` (INT)
+    * `bathrooms` (INT)
+    * `square_meters` (INT)
+    * `image_urls` (ARRAY of TEXT - links to Supabase Storage)
+    * `description` (TEXT)
+    * `created_by` (UUID, FK to `profiles.id`)
+    * `created_at` (TIMESTAMPTZ)
+    * `metadata` (JSONB)
+* **`rating_criteria`**: (NEW: Defines master list of rating aspects)
+    * `id` (UUID, PK)
+    * `key` (TEXT, UNIQUE, NOT NULL - e.g., "luminosity")
+    * `name` (TEXT, NOT NULL - e.g., "Luminosity")
+    * `description` (TEXT)
+    * `is_active` (BOOLEAN, DEFAULT TRUE)
+    * `created_at` (TIMESTAMPTZ)
+* **`checklist_items`**: (NEW: Defines master list of checklist tasks)
+    * `id` (UUID, PK)
+    * `key` (TEXT, UNIQUE, NOT NULL - e.g., "moldPresence")
+    * `name` (TEXT, NOT NULL - e.g., "Presence of Mold")
+    * `description` (TEXT)
+    * `is_active` (BOOLEAN, DEFAULT TRUE)
+    * `created_at` (TIMESTAMPTZ)
+* **`property_visits`**: (The core transactional data)
+    * `id` (UUID, PK)
+    * `user_id` (UUID, FK to `profiles.id`)
+    * `property_id` (UUID, FK to `properties.id` ON DELETE CASCADE)
+    * `visit_date` (DATE)
+    * `overall_score` (INTEGER)
+    * `notes` (TEXT)
+    * `ratings` (JSONB - e.g., `{"luminosity": 4.5, "ambientNoise": 3.0}`)
+    * `checklist` (JSONB - e.g., `{"moldPresence": true, "cleanliness": false}`)
+    * `created_at` (TIMESTAMPTZ)
+* **`favorites`**: (Simple join table for user's favorite properties)
+    * `user_id` (UUID, FK to `profiles.id`)
+    * `property_id` (UUID, FK to `properties.id`)
+    * `created_at` (TIMESTAMPTZ)
+* **`app_configs`**: (Key-value store for global settings)
+    * `key` (TEXT, PK)
+    * `value` (JSONB)
+
+**Row Level Security (RLS)** will be enabled on all tables, with policies configured to allow 'admin' roles full CRUD access for the web portal.
+
+---
+
+### III. Web Admin Portal: Screen-by-Screen Breakdown
+
+This section details the user interface and functionality of the web application, providing a clear roadmap for development.
+
+#### Screen 1: Login Page (`/login`)
+* **Purpose:** Secure entry point for administrators and managers.
+* **Features:**
+    * Centered form with **Email** and **Password** fields.
+    * **"Sign In"** button that authenticates via Supabase Auth.
+    * Clear feedback (toasts) for login success or failure.
+    * Only page accessible to unauthenticated users; redirects to login if unauthorized access is attempted.
+
+#### Screen 2: Main Application Layout (Authenticated Shell)
+* **Purpose:** Provides consistent navigation and structure for all authenticated admin pages.
+* **Features:**
+    * **Persistent Sidebar Navigation:**
+        * Dashboard (`/`)
+        * Users (`/users`)
+        * Properties (`/properties`)
+        * Visits (`/visits`)
+        * **Settings** (Parent Category):
+            * Rating Criteria (`/settings/ratings`)
+            * Checklist Items (`/settings/checklists`)
+        * **"Sign Out"** button: Logs out the user and redirects to the login page.
+    * **Header:** Displays the title of the current page (e.g., "Dashboard") and the logged-in user's email or name.
+
+#### Screen 3: Dashboard (`/`)
+* **Purpose:** At-a-glance overview of the platform's key statistics.
+* **Features:**
+    * Welcome message (e.g., "Welcome, Admin!").
+    * Summary statistic cards (Shadcn/UI Card components) showing:
+        * **"Total Users"**: Count of all entries in the `profiles` table.
+        * **"Total Properties"**: Count of all entries in the `properties` table.
+        * **"Total Visits"**: Count of all entries in the `property_visits` table.
+    * *(Future Enhancement)* Charts visualizing user sign-ups and property additions over time.
+
+#### Screen 4: User Management (`/users`)
+* **Purpose:** View and manage all registered users.
+* **Features:**
+    * A searchable table (Shadcn/UI Table) displaying all users from the `profiles` table.
+    * **Table Columns:** Full Name, Email (requires join with `auth.users`), Role, Joined At.
+    * *(Future Enhancement)* Actions per row to edit user roles or disable/enable accounts.
+
+#### Screen 5: Property Management (`/properties` & `/properties/[id]`)
+* **Purpose:** Full CRUD (Create, Read, Update, Delete) capabilities for all properties.
+
+* **A. Property List View (`/properties`)**
+    * **UI:** Shadcn/UI Table.
+    * **Functionality:**
+        * **"Add New Property" Button:** Prominently placed, opens a modal dialog (Shadcn/UI Dialog) containing the property creation form.
+        * **Search/Filter:** Input fields at the top of the table to filter properties by `address` or `city`.
+        * **Table Columns:** Address, City, Property Type, Price (formatted as currency), Created At (formatted date).
+        * **Row Actions:** Dropdown menu for each property with:
+            * **"View Details"**: Navigates to the dynamic route `/properties/[id]`.
+            * **"Delete"**: Opens a confirmation dialog before deleting the property record.
+
+* **B. Property Creation Form (Modal)**
+    * **UI:** Shadcn/UI Form component within a Dialog modal.
+    * **Fields:** Comprehensive form fields for all `properties` table columns: Address, City, Postal Code, Country, Property Type (dropdown), Price (number), Bedrooms (number), Bathrooms (number), Square Meters (number), Description (text area).
+    * **Validation:** Basic client-side validation (e.g., `address` is required).
+    * **Submission:** Inserts a new record into the `properties` table in Supabase, closes the modal, and refreshes the property list.
+
+* **C. Property Detail & Edit Page (`/properties/[id]`)**
+    * **Purpose:** Comprehensive view and editing of a single property's details.
+    * **UI:** Dynamic page fetching data for a single property based on `id` from the URL.
+    * **Layout:**
+        * Page Header: Displays the full property `address` as the title.
+        * Details Section: Uses Shadcn/UI Card components to display all property criteria (Address, City, Price, Specs, Description, etc.) in a readable format.
+    * **Edit Functionality:**
+        * **"Edit Property" Button:** Transforms static text fields into editable form fields (same as creation form), pre-filled with existing data.
+        * "Save Changes" and "Cancel" buttons appear in edit mode. Saving updates the record in Supabase.
+    * **Visits Section:**
+        * Displays a table listing all visits associated with *this specific property*.
+        * **Table Columns:** User (name/email), Visit Date, Overall Score.
+        * **Row Action:** "View Visit Details" to navigate to the global Visit Detail Page (`/visits/[id]`).
+
+#### Screen 6: Visit Management (`/visits` & `/visits/[id]`)
+* **Purpose:** A centralized hub to view, search, and analyze every single visit recorded on the platform.
+
+* **A. Global Visit Table (`/visits`)**
+    * **UI:** Shadcn/UI Table.
+    * **Functionality:**
+        * Comprehensive table listing all records from the `property_visits` table.
+        * **Advanced Filtering:** Filter visits by User (name/email), Property (address), and Date Range.
+        * **Table Columns:** Property Address, User Name, Visit Date, Overall Score.
+        * **Row Action:** **"View Visit Details"**: Navigates to the dynamic route `/visits/[id]`.
+
+* **B. Visit Detail Page (`/visits/[id]`)**
+    * **Purpose:** Provides a detailed, read-only breakdown of a specific property visit.
+    * **UI:** Dynamic page fetching data for a single visit based on `id` from the URL.
+    * **Sections:**
+        * **Visit Overview:** Displays basic visit details (Property, User, Date, Overall Score).
+        * **Ratings Section:**
+            * Fetches the master `rating_criteria` list.
+            * Iterates through the master list and displays the full `name` (e.g., "Ambient Noise") alongside the score from the visit's `ratings` JSONB data (e.g., "3.0").
+        * **Checklist Section:**
+            * Fetches the master `checklist_items` list.
+            * Iterates through the master list and displays the full `name` (e.g., "Presence of Mold") alongside the boolean result from the visit's `checklist` JSONB data (e.g., "True" or "False").
+        * **Notes Section:** Displays the user's free-form notes for the visit.
+
+#### Screen 7: Criteria Management (`/settings/ratings` & `/settings/checklists`)
+* **Purpose:** Centralized management of the "templates" for property ratings and checklist items, ensuring consistency across the mobile app and web portal.
+
+* **A. Rating Criteria Page (`/settings/ratings`)**
+    * **UI:** Shadcn/UI Table.
+    * **Functionality:**
+        * **"Add New Criterion" Button:** Opens a modal to create a new rating criterion.
+        * **Table Columns:** Name, Key, Description, Status (Active/Inactive), Actions.
+        * **Row Actions:** Dropdown menu for each criterion with "Edit" and "Deactivate/Activate" options.
+        * **Create/Edit Form (Modal):** Fields for Name, Key (unique, not editable after creation), and Description. Updates/inserts into `rating_criteria` table.
+
+* **B. Checklist Items Page (`/settings/checklists`)**
+    * **UI:** Shadcn/UI Table.
+    * **Functionality:**
+        * **"Add New Item" Button:** Opens a modal to create a new checklist item.
+        * **Table Columns:** Name, Key, Description, Status (Active/Inactive), Actions.
+        * **Row Actions:** Dropdown menu for each item with "Edit" and "Deactivate/Activate" options.
+        * **Create/Edit Form (Modal):** Fields for Name, Key (unique, not editable after creation), and Description. Updates/inserts into `checklist_items` table.
+
+---
+
+### IV. Overall Recommendation & Next Steps
+
+For the **PropertyVisit** application, especially with the potential for **millions of users and highly relational data**, **Supabase remains the superior choice**. Its PostgreSQL backbone is a natural fit for your data model, providing powerful querying capabilities and predictable, cost-effective scaling. The open-source nature eliminates vendor lock-in, offering long-term flexibility.
+
+This detailed blueprint provides a clear foundation for developing the **PropertyVisit Web Admin Portal**. The next step would be to begin the technical implementation, following the outlined project structure and component requirements.

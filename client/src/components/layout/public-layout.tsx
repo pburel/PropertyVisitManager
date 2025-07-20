@@ -84,6 +84,10 @@ export default function PublicLayout({ children }: PublicLayoutProps) {
                 </Button>
               </div>
 
+              <Link href="/login">
+                <Button variant="outline">Login</Button>
+              </Link>
+              
               <Link href="/admin/login">
                 <Button>Admin Portal</Button>
               </Link>

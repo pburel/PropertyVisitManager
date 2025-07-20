@@ -2,7 +2,7 @@
 
 ## Overview
 
-PropertyVisit is a comprehensive property management application designed to help users evaluate and track property visits. The system consists of a React frontend built with TypeScript, Vite, and shadcn/ui components, paired with an Express.js backend using Drizzle ORM for database operations. The application is specifically architected for property evaluation workflows, including rating systems, checklists, and visit tracking.
+PropertyVisit is a comprehensive property management application designed to help users evaluate and track property visits. The system consists of a React frontend built with TypeScript, Vite, and shadcn/ui components, paired with an Express.js backend using Drizzle ORM for database operations. The application features both public and private interfaces: a public frontend for marketing and user access, an admin portal for management, and a freemium pricing model. The application is specifically architected for property evaluation workflows, including rating systems, checklists, and visit tracking with a private property model where each user manages their own properties.
 
 ## User Preferences
 
@@ -108,12 +108,26 @@ Preferred communication style: Simple, everyday language.
 - Environment-based database URLs
 - Connection pooling for production workloads
 
+## Recent Changes (January 2025)
+
+- **Public Frontend**: Created comprehensive public homepage with property browsing, hero section, features overview, and stats
+- **Freemium Pricing**: Added detailed pricing page with Free ($0), Pro ($19/month), and Enterprise (custom) tiers
+- **User Dashboard**: Built dedicated user dashboard with property management, visit tracking, and freemium limitations
+- **Dual Authentication**: Separate login flows for regular users (/login) and admin users (/admin/login)
+- **Demo Credentials**: Added demo@propertyvisit.com (demo123) for regular users and admin@propertyvisit.com (admin123) for admins
+- **Layout Architecture**: Three distinct layouts - PublicLayout for marketing, UserLayout for regular users, AdminLayout for admins
+- **Private Properties**: Properties are now private to each user, not a public marketplace
+- **Route Structure**: Clear separation between public routes (/), user routes (/user), and admin routes (/admin)
+
 ### Key Architectural Decisions
 
-1. **Monorepo Structure**: Client and server in same repository for easier development and type sharing
-2. **Drizzle ORM**: Chosen for type safety and PostgreSQL optimization over traditional ORMs
-3. **shadcn/ui**: Provides accessible, customizable components without framework lock-in
-4. **TanStack Query**: Handles complex server state management with caching and optimistic updates
-5. **Shared Schema**: TypeScript types shared between client and server for consistency
-6. **Simple Authentication**: Email/password approach for MVP, extensible to OAuth later
-7. **PostgreSQL**: Relational database chosen for complex property and visit relationships
+1. **Multi-Interface Architecture**: Separate public, user, and admin interfaces with dedicated layouts and navigation
+2. **Freemium Model**: Free tier with 3 properties and 5 monthly visits, Pro and Enterprise tiers for scaling
+3. **Private Property System**: Each user manages their own private property portfolio
+4. **Monorepo Structure**: Client and server in same repository for easier development and type sharing
+5. **Drizzle ORM**: Chosen for type safety and PostgreSQL optimization over traditional ORMs
+6. **shadcn/ui**: Provides accessible, customizable components without framework lock-in
+7. **TanStack Query**: Handles complex server state management with caching and optimistic updates
+8. **Shared Schema**: TypeScript types shared between client and server for consistency
+9. **Dual Authentication**: Email/password approach with role-based routing (users vs admins)
+10. **PostgreSQL**: Relational database chosen for complex property and visit relationships

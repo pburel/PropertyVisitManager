@@ -19,6 +19,9 @@ import PublicHome from "@/pages/public/home";
 import PublicPropertyDetail from "@/pages/public/property-detail";
 import PublicPricing from "@/pages/public/pricing";
 import PublicLayout from "@/components/layout/public-layout";
+import UserDashboard from "@/pages/user-dashboard";
+import UserLayout from "@/components/layout/user-layout";
+import PublicLogin from "@/pages/public/login";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated } = useAuth();
@@ -27,6 +30,22 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
     return <Redirect to="/admin/login" />;
   }
   
+  return <AdminLayout>{children}</AdminLayout>;
+}
+
+function UserProtectedRoute({ children }: { children: React.ReactNode }) {
+  const { isAuthenticated, user } = useAuth();
+  
+  if (!isAuthenticated) {
+    return <Redirect to="/login" />;
+  }
+  
+  // Regular users (not admins) get user layout
+  if (user?.role !== "admin") {
+    return <UserLayout>{children}</UserLayout>;
+  }
+  
+  // Admins can access user routes but see them in admin context
   return <AdminLayout>{children}</AdminLayout>;
 }
 
@@ -52,6 +71,18 @@ function Router() {
         <PublicLayout>
           <PublicPricing />
         </PublicLayout>
+      </Route>
+
+      {/* User Authentication */}
+      <Route path="/login">
+        {isAuthenticated ? <Redirect to="/user" /> : <PublicLogin />}
+      </Route>
+
+      {/* User Dashboard Routes */}
+      <Route path="/user">
+        <UserProtectedRoute>
+          <UserDashboard />
+        </UserProtectedRoute>
       </Route>
 
       {/* Admin Routes */}

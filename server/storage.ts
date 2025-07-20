@@ -106,6 +106,74 @@ export class MemStorage implements IStorage {
     };
     this.profiles.set(adminId, admin);
 
+    // Create demo user
+    const demoUserId = this.generateId();
+    const demoUser: Profile = {
+      id: demoUserId,
+      fullName: "Demo User",
+      email: "demo@propertyvisit.com",
+      password: "demo123",
+      avatarUrl: null,
+      role: "user",
+      createdAt: new Date(),
+    };
+    this.profiles.set(demoUserId, demoUser);
+
+    // Create demo property for demo user
+    const demoPropertyId = this.generateId();
+    const demoProperty: Property = {
+      id: demoPropertyId,
+      address: "123 Demo Street",
+      city: "Demo City",
+      postalCode: "12345",
+      country: "Demo Country",
+      propertyType: "Apartment",
+      bedrooms: 2,
+      bathrooms: 1,
+      squareMeters: 85,
+      price: "$350,000",
+      description: "A beautiful 2-bedroom apartment perfect for property evaluation demonstrations. Features modern amenities and great natural light.",
+      imageUrls: null,
+      metadata: {},
+      createdBy: demoUserId,
+      createdAt: new Date(),
+    };
+    this.properties.set(demoPropertyId, demoProperty);
+
+    // Create demo visit for the demo property
+    const demoVisitId = this.generateId();
+    const demoVisit: Visit = {
+      id: demoVisitId,
+      propertyId: demoPropertyId,
+      userId: demoUserId,
+      visitDate: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // 7 days ago
+      overallScore: "4.2",
+      notes: "Great property with excellent luminosity. Minor issues with ambient noise from nearby street. Overall very promising for the price range.",
+      ratings: {
+        luminosity: 5,
+        ambientNoise: 3,
+        thermalInsulation: 4,
+        generalCondition: 4,
+        equipmentState: 4,
+        neighborhoodSecurity: 5,
+        accessibility: 4,
+        renovationPotential: 3,
+        valueForMoney: 5
+      },
+      checklist: {
+        moldPresence: false,
+        cleanliness: true,
+        windowFunctionality: true,
+        floorCondition: true,
+        odorAbsence: true,
+        wallState: true,
+        roomLighting: true,
+        internetConnectivity: true
+      },
+      createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+    };
+    this.visits.set(demoVisitId, demoVisit);
+
     // Create default rating criteria
     const defaultRatings = [
       { key: "luminosity", name: "Luminosity", description: "Natural and artificial lighting quality" },
